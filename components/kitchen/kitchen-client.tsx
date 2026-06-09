@@ -96,7 +96,7 @@ export function KitchenClient({
         },
         (payload) => {
           const row = payload.new as KitchenOrder;
-          if (!KITCHEN_STATUSES.includes(row.status)) return;
+          if (!KITCHEN_STATUSES.includes(row.status) || !row.payment_confirmed) return;
           setOrders((prev) => {
             if (prev.some((o) => o.id === row.id)) return prev;
             return [...prev, row].sort(
@@ -107,7 +107,6 @@ export function KitchenClient({
             knownIdsRef.current.add(row.id);
             setNewOrderIds((prev) => new Set(prev).add(row.id));
             playAlert();
-            // Clear new-order highlight after 5s
             setTimeout(() => {
               setNewOrderIds((prev) => {
                 const next = new Set(prev);
@@ -129,7 +128,7 @@ export function KitchenClient({
         },
         (payload) => {
           const row = payload.new as KitchenOrder;
-          if (KITCHEN_STATUSES.includes(row.status)) {
+          if (KITCHEN_STATUSES.includes(row.status) && row.payment_confirmed) {
             setOrders((prev) => {
               const exists = prev.some((o) => o.id === row.id);
               if (exists) return prev.map((o) => (o.id === row.id ? row : o));
@@ -137,6 +136,20 @@ export function KitchenClient({
                 (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
               );
             });
+            // Alert if this order is newly appearing (payment just confirmed)
+            if (!knownIdsRef.current.has(row.id)) {
+              knownIdsRef.current.add(row.id);
+              setNewOrderIds((prev) => new Set(prev).add(row.id));
+              playAlert();
+              setTimeout(() => {
+                setNewOrderIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(row.id);
+                  return next;
+                });
+              }, 5000);
+              loadOrderItems(row.id);
+            }
           } else {
             setOrders((prev) => prev.filter((o) => o.id !== row.id));
           }

@@ -55,7 +55,7 @@ export function LiveClient({
         },
         (payload) => {
           const row = payload.new as OrderRow;
-          if (ACTIVE_STATUSES.includes(row.status)) {
+          if (ACTIVE_STATUSES.includes(row.status) && row.payment_confirmed) {
             setOrders((prev) => [row, ...prev.filter((o) => o.id !== row.id)]);
           }
         }
@@ -70,7 +70,7 @@ export function LiveClient({
         },
         (payload) => {
           const row = payload.new as OrderRow;
-          if (ACTIVE_STATUSES.includes(row.status)) {
+          if (ACTIVE_STATUSES.includes(row.status) && row.payment_confirmed) {
             setOrders((prev) => {
               const exists = prev.some((o) => o.id === row.id);
               if (exists) return prev.map((o) => (o.id === row.id ? row : o));

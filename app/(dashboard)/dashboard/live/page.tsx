@@ -12,6 +12,7 @@ export interface OrderRow {
   type: "dine_in" | "takeaway";
   status: "new" | "preparing" | "ready" | "served" | "completed" | "cancelled";
   total_amount: number;
+  payment_confirmed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -47,9 +48,10 @@ export default async function LivePage() {
   const [ordersRes, tablesRes, itemsRes] = await Promise.all([
     supabase
       .from("orders")
-      .select("id, restaurant_id, table_id, order_number, type, status, total_amount, created_at, updated_at")
+      .select("id, restaurant_id, table_id, order_number, type, status, total_amount, payment_confirmed, created_at, updated_at")
       .eq("restaurant_id", restaurantId)
       .in("status", activeStatuses)
+      .eq("payment_confirmed", true)
       .order("created_at", { ascending: false }),
     supabase
       .from("restaurant_tables")

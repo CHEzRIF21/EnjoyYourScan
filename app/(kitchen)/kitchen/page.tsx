@@ -14,6 +14,7 @@ export interface KitchenOrder {
   total_amount: number;
   is_locked: boolean;
   locked_at: string | null;
+  payment_confirmed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -47,10 +48,11 @@ export default async function KitchenPage() {
     supabase
       .from("orders")
       .select(
-        "id, restaurant_id, table_id, order_number, type, status, total_amount, is_locked, locked_at, created_at, updated_at"
+        "id, restaurant_id, table_id, order_number, type, status, total_amount, is_locked, locked_at, payment_confirmed, created_at, updated_at"
       )
       .eq("restaurant_id", restaurantId)
       .in("status", ["new", "preparing"])
+      .eq("payment_confirmed", true)
       .order("created_at", { ascending: true }),
     supabase
       .from("restaurant_tables")
